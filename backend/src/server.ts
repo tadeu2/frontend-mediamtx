@@ -10,9 +10,18 @@ export function buildServer() {
   const config = loadConfig();
   const app = Fastify({ logger: true });
 
+  /* ── CORS (self-contained, can be encapsulated) ── */
   void app.register(corsPlugin, { origin: config.corsOrigin });
-  void app.register(errorHandlerPlugin);
-  void app.register(authPlugin, { expectedToken: config.authToken });
+
+  /* ── Auth + error handler: apply directly to root scope
+   * so hooks propagate to all child route scopes.
+   * Fastify v5 register() creates sibling encapsulated
+   * scopes — using register() for auth/errors silently
+   * bypasses them on sibling routes.              ── */
+  void authPlugin(app, { expectedToken: config.authToken });
+  void errorHandlerPlugin(app, {});
+
+  /* ── Routes inherit root-scope hooks ── */
   void app.register(adminRoutes, {
     mediamtxApiUrl: config.mediamtxApiUrl,
     mediamtxMetricsUrl: config.mediamtxMetricsUrl,

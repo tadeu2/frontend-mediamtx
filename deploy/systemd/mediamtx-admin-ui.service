@@ -1,0 +1,38 @@
+[Unit]
+Description=MediaMTX Admin UI — self-hosted read-only admin frontend
+Documentation=https://github.com/your-org/mediamtx-admin-ui
+After=network.target mediamtx.service
+Requires=mediamtx.service
+
+[Service]
+Type=simple
+User=mediamtx-ui
+Group=mediamtx-ui
+
+# App directory
+WorkingDirectory=/opt/mediamtx-admin-ui/backend
+ExecStart=/opt/mediamtx-admin-ui/backend/node_modules/.bin/tsx /opt/mediamtx-admin-ui/backend/src/server.ts
+Restart=on-failure
+RestartSec=5
+
+# Environment
+Environment=NODE_ENV=production
+Environment=BIND_ADDRESS=127.0.0.1
+Environment=PORT=9088
+Environment=MEDIAMTX_API_URL=http://127.0.0.1:9997
+Environment=MEDIAMTX_METRICS_URL=http://127.0.0.1:9998/metrics
+Environment=MEDIAMTX_CONFIG_PATH=/etc/mediamtx/mediamtx.yml
+# Environment=ADMIN_AUTH_TOKEN=change-me
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+ReadWritePaths=/opt/mediamtx-admin-ui
+
+[Install]
+WantedBy=multi-user.target
