@@ -1,0 +1,67 @@
+import Fastify from 'fastify';
+import type { FastifyInstance } from 'fastify';
+
+import { loadConfig } from '../src/config';
+import { authPlugin } from '../src/plugins/auth';
+import { corsPlugin } from '../src/plugins/cors';
+import { errorHandlerPlugin } from '../src/plugins/error-handler';
+import { adminRoutes } from '../src/routes/admin';
+
+/**
+ * Build a test Fastify instance with optional auth token configuration.
+ *
+ * Does NOT import `server.ts` to avoid triggering the top-level `main()`
+ * side-effect that starts a real listener on port 9088.
+ *
+ * Calls plugins as PLAIN FUNCTIONS (not through `app.register()`) so
+ * cross-cutting hooks (auth, error handling) apply to all routes on the
+ * root scope.  The production code uses `app.register()` which creates
+ * sibling encapsulated scopes — a known architecture gap noted in the
+ * apply summary.
+ *
+ * Environment manipulation is serialized per-call so callers MUST serialize
+ * their test-file-level builds (use --test-concurrency=1).
+ */
+export async function createTestServer(options?: {
+  authToken?: string;
+}): Promise<FastifyInstance> {
+  const originalToken = process.env.ADMIN_AUTH_TOKEN;
+
+  try {
+    if (options?.authToken) {
+      process.env.ADMIN_AUTH_TOKEN = options.authToken;
+    } else {
+      delete process.env.ADMIN_AUTH_TOKEN;
+    }
+
+    const config = loadConfig();
+    const app = Fastify({ logger: false });
+
+    // Call plugins as plain functions — scopes share the root `app` so
+    // addHook / setErrorHandler inside plugins apply to all routes.
+    await corsPlugin(app, { origin: config.corsOrigin });
+    await errorHandlerPlugin(app);
+    await authPlugin(app, { expectedToken: config.authToken });
+    await adminRoutes(app, {
+      mediamtxApiUrl: config.mediamtxApiUrl,
+      mediamtxMetricsUrl: config.mediamtxMetricsUrl,
+      mediamtxConfigPath: config.mediamtxConfigPath
+    });
+
+    // /healthz is defined in server.ts; replicate it for tests
+    app.get('/healthz', async () => ({
+      ok: true,
+      service: 'mediamtx-admin-backend',
+      generatedAt: new Date().toISOString()
+    }));
+
+    await app.ready();
+    return app;
+  } finally {
+    if (originalToken !== undefined) {
+      process.env.ADMIN_AUTH_TOKEN = originalToken;
+    } else {
+      delete process.env.ADMIN_AUTH_TOKEN;
+    }
+  }
+}

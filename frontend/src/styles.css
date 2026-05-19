@@ -1,0 +1,49 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  color-scheme: dark;
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --border: #2a2d3a;
+  --text: #e1e4ea;
+  --text-muted: #8b8fa3;
+  --accent: #4f8cff;
+  --error: #f87171;
+  --warning: #fbbf24;
+  --success: #34d399;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg);
+}
+
+body {
+  min-height: 100vh;
+}
+
+.app-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.app-shell__header {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.app-shell__header h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.app-shell__header p {
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
