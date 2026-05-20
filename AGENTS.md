@@ -26,3 +26,11 @@
 ## Config knobs already in use
 - Backend reads `BIND_ADDRESS`, `PORT`, `MEDIAMTX_API_URL`, `MEDIAMTX_METRICS_URL`, `MEDIAMTX_CONFIG_PATH`, `ADMIN_AUTH_TOKEN`, `CORS_ORIGIN`.
 - Frontend dev server uses port `5173`.
+
+## Versioning commitment
+- **Every change MUST be reflected in `CHANGELOG.md`** before commit.
+- **Every change MUST update `VERSIONING.md`** if the version policy changes.
+- **Bump `backend/package.json` and `frontend/package.json`** together when releasing (`npm version` or manual edit).
+- **Do not version-bump for pure README/docs-only changes**; still log them in `CHANGELOG.md`.
+- **Keep `CHANGELOG.md` sections** organized by: `Security`, `Added`, `Changed`, `Fixed`, `Removed`.
+- **Tag releases** with `git tag vX.Y.Z` and push tags.
