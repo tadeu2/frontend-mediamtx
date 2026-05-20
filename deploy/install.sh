@@ -90,7 +90,16 @@ chown -R "$APP_USER:$APP_GROUP" "$APP_DIR"
 chmod 750 "$APP_DIR"
 log "Permissions set"
 
-# ── Sudoers for journalctl/systemctl ──────────────────────────
+# ── Polkit for systemctl (no sudo needed) ─────────────────────
+POLKIT_DIR="/etc/polkit-1/rules.d"
+if [[ -d "$POLKIT_DIR" ]]; then
+  cp "$SOURCE_DIR/deploy/polkit/50-mediamtx-admin-ui.rules" "$POLKIT_DIR/"
+  log "Polkit rules installed"
+else
+  log "Polkit not found; systemctl may need alternative configuration"
+fi
+
+# ── Sudoers for journalctl (systemd-journal may not be enough) ─
 SUDOERS_FILE="/etc/sudoers.d/mediamtx-admin-ui"
 if [[ ! -f "$SUDOERS_FILE" ]]; then
   cat > "$SUDOERS_FILE" << EOF
