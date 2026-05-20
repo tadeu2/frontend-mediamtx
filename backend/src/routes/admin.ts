@@ -16,11 +16,10 @@ import { redactConfigYaml } from '../services/config-redact';
 import { readJournalLogs } from '../services/journal';
 import { readSafeDiagnostics, readSystemdStatus } from '../services/systemd';
 import { createMediaMTXClient } from '../services/mediamtx-api';
+import type { SettingsManager } from '../services/settings';
 
 interface AdminRoutesOptions {
-  mediamtxApiUrl: string;
-  mediamtxApiUsername?: string;
-  mediamtxApiPassword?: string;
+  settingsManager: SettingsManager;
   mediamtxMetricsUrl: string;
   mediamtxConfigPath: string;
 }
@@ -36,7 +35,7 @@ function mapPathStatus(item: { available?: boolean; online?: boolean }): StreamP
 }
 
 export const adminRoutes: FastifyPluginAsync<AdminRoutesOptions> = async (fastify, options) => {
-  const mtx = createMediaMTXClient(options.mediamtxApiUrl, options.mediamtxApiUsername, options.mediamtxApiPassword);
+  const { settingsManager } = options;
 
   fastify.get('/api/health', async (): Promise<HealthResponse> => ({
     ok: true,
@@ -48,12 +47,12 @@ export const adminRoutes: FastifyPluginAsync<AdminRoutesOptions> = async (fastif
   fastify.get('/api/status', async (): Promise<{ generatedAt: string; source: string; service: ServiceStatus; warnings?: string[] }> => {
     const [systemd, apiOk] = await Promise.all([
       readSystemdStatus(),
-      mtx.isAvailable(),
+      createMTXClient().isAvailable(),
     ]);
 
     const warnings: string[] = [];
     if (systemd.state === 'unknown') warnings.push('systemctl unavailable; bounded fallback.');
-    if (!apiOk) warnings.push('MediaMTX API unreachable at ' + options.mediamtxApiUrl);
+    if (!apiOk) warnings.push('MediaMTX API unreachable');
 
     return {
       generatedAt: now(),
@@ -64,6 +63,7 @@ export const adminRoutes: FastifyPluginAsync<AdminRoutesOptions> = async (fastif
   });
 
   fastify.get('/api/streams', async (): Promise<StreamsResponse> => {
+    const mtx = createMTXClient();
     const data = await mtx.fetchPaths();
     if (data.itemCount === 0 && data.items.length === 0) {
       return { generatedAt: now(), source: 'unavailable', total: 0, items: [] };
@@ -96,8 +96,9 @@ export const adminRoutes: FastifyPluginAsync<AdminRoutesOptions> = async (fastif
   );
 
   fastify.get('/api/metrics', async (): Promise<MetricsSummary> => {
+    const metricsUrl = settingsManager.get().mediamtxMetricsUrl;
     try {
-      const response = await fetch(options.mediamtxMetricsUrl, { method: 'GET' });
+      const response = await fetch(metricsUrl, { method: 'GET' });
       if (!response.ok) {
         throw new Error(`metrics_status_${response.status}`);
       }
@@ -123,17 +124,18 @@ export const adminRoutes: FastifyPluginAsync<AdminRoutesOptions> = async (fastif
   });
 
   fastify.get('/api/config', async (): Promise<ConfigView> => {
+    const configPath = settingsManager.get().mediamtxConfigPath;
     try {
       const [content, apiCfg] = await Promise.all([
-        readFile(options.mediamtxConfigPath, 'utf8'),
-        mtx.fetchGlobalConfig(),
+        readFile(configPath, 'utf8'),
+        createMTXClient().fetchGlobalConfig(),
       ]);
 
       return {
         generatedAt: now(),
         source: 'config',
         available: true,
-        path: options.mediamtxConfigPath,
+        path: configPath,
         redactedYaml: redactConfigYaml(content),
         flags: {
           apiEnabled: apiCfg.api !== undefined ? String(apiCfg.api) !== 'false' && String(apiCfg.api) !== 'no' : true,
@@ -147,7 +149,7 @@ export const adminRoutes: FastifyPluginAsync<AdminRoutesOptions> = async (fastif
         generatedAt: now(),
         source: 'unavailable',
         available: false,
-        path: options.mediamtxConfigPath,
+        path: configPath,
         redactedYaml: '',
         flags: { apiEnabled: false, metricsEnabled: false, pprofEnabled: false },
         warnings: ['Configuration file unavailable.'],
@@ -158,9 +160,10 @@ export const adminRoutes: FastifyPluginAsync<AdminRoutesOptions> = async (fastif
   fastify.get('/api/diagnostics/safe-check', async (): Promise<SafeDiagnosticsResponse> => {
     const [diag, apiOk] = await Promise.all([
       readSafeDiagnostics(),
-      mtx.isAvailable(),
+      createMTXClient().isAvailable(),
     ]);
 
+    const settings = settingsManager.getRedacted();
     return {
       ...diag,
       checks: [
@@ -170,11 +173,17 @@ export const adminRoutes: FastifyPluginAsync<AdminRoutesOptions> = async (fastif
           label: 'MediaMTX API reachable',
           status: apiOk ? 'ok' : 'error',
           summary: apiOk
-            ? 'MediaMTX API responds at ' + options.mediamtxApiUrl
-            : 'Cannot reach ' + options.mediamtxApiUrl,
+            ? 'MediaMTX API responds'
+            : 'Cannot reach MediaMTX API. Check settings.',
         },
       ],
       warnings: apiOk ? diag.warnings : [...diag.warnings, 'MediaMTX API is not available.'],
     };
   });
+
+  /* ── Helper: create client from current settings ── */
+  function createMTXClient() {
+    const s = settingsManager.get();
+    return createMediaMTXClient(s.mediamtxApiUrl, s.mediamtxApiUsername, s.mediamtxApiPassword);
+  }
 };

@@ -6,6 +6,7 @@ import { authPlugin } from '../src/plugins/auth';
 import { corsPlugin } from '../src/plugins/cors';
 import { errorHandlerPlugin } from '../src/plugins/error-handler';
 import { adminRoutes } from '../src/routes/admin';
+import { SettingsManager } from '../src/services/settings';
 
 /**
  * Build a test Fastify instance with optional auth token configuration.
@@ -40,8 +41,15 @@ export async function createTestServer(options?: {
     await corsPlugin(app, { origin: config.corsOrigin });
     await errorHandlerPlugin(app);
     await authPlugin(app, { expectedToken: config.authToken });
-    await adminRoutes(app, {
+    const settingsManager = new SettingsManager(undefined, {
       mediamtxApiUrl: config.mediamtxApiUrl,
+      mediamtxApiUsername: '',
+      mediamtxApiPassword: '',
+      mediamtxMetricsUrl: config.mediamtxMetricsUrl,
+      mediamtxConfigPath: config.mediamtxConfigPath,
+    });
+    await adminRoutes(app, {
+      settingsManager,
       mediamtxMetricsUrl: config.mediamtxMetricsUrl,
       mediamtxConfigPath: config.mediamtxConfigPath
     });

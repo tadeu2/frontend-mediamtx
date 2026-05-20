@@ -5,10 +5,11 @@ import { Logs } from '../pages/Logs';
 import { Metrics } from '../pages/Metrics';
 import { Config } from '../pages/Config';
 import { Diagnostics } from '../pages/Diagnostics';
+import { Settings } from '../pages/Settings';
 import { usePermissions } from '../api/ApiContext';
 import { ADMIN_ITEMS } from '../config/permissions';
 
-type Route = 'dashboard' | 'streams' | 'logs' | 'metrics' | 'config' | 'diagnostics';
+type Route = 'dashboard' | 'streams' | 'logs' | 'metrics' | 'config' | 'diagnostics' | 'settings';
 
 const NAV_ITEMS: { route: Route; label: string }[] = [
   { route: 'dashboard', label: 'Dashboard' },
@@ -17,15 +18,17 @@ const NAV_ITEMS: { route: Route; label: string }[] = [
   { route: 'metrics', label: 'Metrics' },
   { route: 'config', label: 'Config' },
   { route: 'diagnostics', label: 'Diagnostics' },
+  { route: 'settings', label: 'Settings' },
 ];
 
-const PAGE_MAP: Record<Route, React.FC> = {
+const PAGE_MAP: Record<string, React.FC> = {
   dashboard: Dashboard,
   streams: Streams,
   logs: Logs,
   metrics: Metrics,
   config: Config,
   diagnostics: Diagnostics,
+  settings: Settings,
 };
 
 function resolveRoute(hash: string): Route {

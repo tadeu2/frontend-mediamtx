@@ -8,12 +8,23 @@ import { authPlugin } from './plugins/auth';
 import { corsPlugin } from './plugins/cors';
 import { errorHandlerPlugin } from './plugins/error-handler';
 import { adminRoutes } from './routes/admin';
+import { settingsRoutes } from './routes/settings';
+import { SettingsManager } from './services/settings';
 
 export function buildServer() {
   const config = loadConfig();
   const app = Fastify({ logger: true });
   const frontendDist = resolve(process.cwd(), '../frontend/dist');
   const frontendAssets = resolve(frontendDist, 'assets');
+
+  /* ── Dynamic settings (persisted to settings.json) ── */
+  const settingsManager = new SettingsManager(undefined, {
+    mediamtxApiUrl: config.mediamtxApiUrl,
+    mediamtxApiUsername: config.mediamtxApiUsername ?? '',
+    mediamtxApiPassword: config.mediamtxApiPassword ?? '',
+    mediamtxMetricsUrl: config.mediamtxMetricsUrl,
+    mediamtxConfigPath: config.mediamtxConfigPath,
+  });
 
   /* ── CORS (self-contained, can be encapsulated) ── */
   void app.register(corsPlugin, { origin: config.corsOrigin });
@@ -27,13 +38,8 @@ export function buildServer() {
   void errorHandlerPlugin(app, {});
 
   /* ── Routes inherit root-scope hooks ── */
-  void app.register(adminRoutes, {
-    mediamtxApiUrl: config.mediamtxApiUrl,
-    mediamtxApiUsername: config.mediamtxApiUsername,
-    mediamtxApiPassword: config.mediamtxApiPassword,
-    mediamtxMetricsUrl: config.mediamtxMetricsUrl,
-    mediamtxConfigPath: config.mediamtxConfigPath
-  });
+  void app.register(adminRoutes, { settingsManager, mediamtxMetricsUrl: config.mediamtxMetricsUrl, mediamtxConfigPath: config.mediamtxConfigPath });
+  void app.register(settingsRoutes, { settingsManager });
 
   if (existsSync(frontendDist) && existsSync(frontendAssets)) {
     void app.register(fastifyStatic, {
@@ -57,7 +63,7 @@ export function buildServer() {
     };
   });
 
-  return { app, config };
+  return { app, config, settingsManager };
 }
 
 async function main() {
