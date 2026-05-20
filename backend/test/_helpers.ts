@@ -13,11 +13,9 @@ import { adminRoutes } from '../src/routes/admin';
  * Does NOT import `server.ts` to avoid triggering the top-level `main()`
  * side-effect that starts a real listener on port 9088.
  *
- * Calls plugins as PLAIN FUNCTIONS (not through `app.register()`) so
- * cross-cutting hooks (auth, error handling) apply to all routes on the
- * root scope.  The production code uses `app.register()` which creates
- * sibling encapsulated scopes — a known architecture gap noted in the
- * apply summary.
+ * Calls auth/error plugins as PLAIN FUNCTIONS (not through `app.register()`)
+ * so cross-cutting hooks apply to all route scopes. Production follows the
+ * same pattern after the Fastify v5 encapsulation fix.
  *
  * Environment manipulation is serialized per-call so callers MUST serialize
  * their test-file-level builds (use --test-concurrency=1).

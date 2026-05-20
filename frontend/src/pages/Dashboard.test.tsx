@@ -112,7 +112,7 @@ describe('Dashboard', () => {
   it('renders warnings when present', async () => {
     const api = createMockApi();
     api.getHealth.mockResolvedValue({
-      ok: false,
+      ok: true,
       service: 'mediamtx-admin-ui',
       generatedAt: new Date().toISOString(),
       source: 'fallback',

@@ -1,4 +1,7 @@
 import Fastify from 'fastify';
+import fastifyStatic from '@fastify/static';
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 import { loadConfig } from './config';
 import { authPlugin } from './plugins/auth';
@@ -9,6 +12,8 @@ import { adminRoutes } from './routes/admin';
 export function buildServer() {
   const config = loadConfig();
   const app = Fastify({ logger: true });
+  const frontendDist = resolve(process.cwd(), '../frontend/dist');
+  const frontendAssets = resolve(frontendDist, 'assets');
 
   /* ── CORS (self-contained, can be encapsulated) ── */
   void app.register(corsPlugin, { origin: config.corsOrigin });
@@ -27,6 +32,20 @@ export function buildServer() {
     mediamtxMetricsUrl: config.mediamtxMetricsUrl,
     mediamtxConfigPath: config.mediamtxConfigPath
   });
+
+  if (existsSync(frontendDist) && existsSync(frontendAssets)) {
+    void app.register(fastifyStatic, {
+      root: frontendAssets,
+      prefix: '/assets/',
+      immutable: true,
+      maxAge: '30d'
+    });
+
+    app.get('/', async (_request, reply) => {
+      reply.header('Cache-Control', 'no-store');
+      return reply.sendFile('index.html', frontendDist);
+    });
+  }
 
   app.get('/healthz', async () => {
     return {

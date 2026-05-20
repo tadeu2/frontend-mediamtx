@@ -52,7 +52,7 @@ export async function readJournalLogs(params: {
     args.push('--priority', priority);
   }
 
-  const result = await runSafeCommand('journalctl', args);
+  const result = await runSafeCommand('sudo', ['-n', '/usr/bin/journalctl', ...args]);
   if (!result.ok) {
     return {
       generatedAt: now(),

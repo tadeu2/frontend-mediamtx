@@ -1,6 +1,6 @@
 [Unit]
 Description=MediaMTX Admin UI — self-hosted read-only admin frontend
-Documentation=https://github.com/your-org/mediamtx-admin-ui
+Documentation=https://github.com/tadeu2/frontend-mediamtx
 After=network.target mediamtx.service
 Requires=mediamtx.service
 
@@ -11,12 +11,13 @@ Group=mediamtx-ui
 
 # App directory
 WorkingDirectory=/opt/mediamtx-admin-ui/backend
-ExecStart=/opt/mediamtx-admin-ui/backend/node_modules/.bin/tsx /opt/mediamtx-admin-ui/backend/src/server.ts
+ExecStart=/usr/bin/node /opt/mediamtx-admin-ui/backend/dist/backend/src/server.js
 Restart=on-failure
 RestartSec=5
 
 # Environment
 Environment=NODE_ENV=production
+EnvironmentFile=/opt/mediamtx-admin-ui/backend/.env
 Environment=BIND_ADDRESS=127.0.0.1
 Environment=PORT=9088
 Environment=MEDIAMTX_API_URL=http://127.0.0.1:9997

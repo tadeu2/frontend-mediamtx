@@ -28,7 +28,7 @@ export async function readSystemdStatus(): Promise<ServiceStatus> {
     '--property',
     'Id,ActiveState,SubState,ActiveEnterTimestamp'
   ];
-  const result = await runSafeCommand('systemctl', args);
+  const result = await runSafeCommand('sudo', ['-n', '/usr/bin/systemctl', ...args]);
 
   if (!result.ok) {
     return {

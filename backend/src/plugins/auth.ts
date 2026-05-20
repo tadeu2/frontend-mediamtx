@@ -25,7 +25,7 @@ export const authPlugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify,
   });
 
   fastify.addHook('onRequest', async (request, reply) => {
-    if (request.url === '/healthz') {
+    if (request.url === '/healthz' || !request.url.startsWith('/api/')) {
       return;
     }
 

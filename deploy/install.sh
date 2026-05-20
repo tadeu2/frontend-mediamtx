@@ -6,6 +6,7 @@
 set -euo pipefail
 
 APP_DIR="/opt/mediamtx-admin-ui"
+SOURCE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 APP_USER="mediamtx-ui"
 APP_GROUP="mediamtx-ui"
 BACKEND_PORT=9088
@@ -45,14 +46,14 @@ fi
 
 # ── Copy app files ─────────────────────────────────────────────
 mkdir -p "$APP_DIR"
-cp -r backend frontend shared "$APP_DIR/"
-cp -r deploy/systemd/*.service /etc/systemd/system/
-log "Copied app files to $APP_DIR"
-
-# ── Install backend dependencies ───────────────────────────────
-cd "$APP_DIR/backend"
-npm ci --omit=dev
-log "Backend dependencies installed"
+if [[ "$SOURCE_DIR" != "$APP_DIR" ]]; then
+  cp -r "$SOURCE_DIR/backend" "$SOURCE_DIR/frontend" "$SOURCE_DIR/shared" "$APP_DIR/"
+  log "Copied app files to $APP_DIR"
+else
+  log "Using existing app checkout at $APP_DIR"
+fi
+cp -r "$SOURCE_DIR/deploy/systemd/"*.service /etc/systemd/system/
+log "Installed systemd unit"
 
 # ── Build frontend ─────────────────────────────────────────────
 cd "$APP_DIR/frontend"
@@ -62,8 +63,13 @@ log "Frontend built"
 
 # ── Build backend ──────────────────────────────────────────────
 cd "$APP_DIR/backend"
+npm ci
 npm run build
 log "Backend compiled"
+
+# ── Keep only production backend dependencies ──────────────────
+npm prune --omit=dev
+log "Backend pruned to production dependencies"
 
 # ── Configure .env ─────────────────────────────────────────────
 if [[ ! -f "$APP_DIR/backend/.env" ]]; then
@@ -85,11 +91,10 @@ SUDOERS_FILE="/etc/sudoers.d/mediamtx-admin-ui"
 if [[ ! -f "$SUDOERS_FILE" ]]; then
   cat > "$SUDOERS_FILE" << EOF
 # mediamtx-admin-ui: allow read-only journalctl and systemctl
-$APP_USER ALL=(root) NOPASSWD: /usr/bin/journalctl -u mediamtx --no-pager *
-$APP_USER ALL=(root) NOPASSWD: /usr/bin/journalctl -u mediamtx --output=json *
-$APP_USER ALL=(root) NOPASSWD: /usr/bin/systemctl show mediamtx --property=*
-$APP_USER ALL=(root) NOPASSWD: /usr/bin/systemctl is-active mediamtx
-$APP_USER ALL=(root) NOPASSWD: /usr/bin/systemctl status mediamtx --no-pager
+$APP_USER ALL=(root) NOPASSWD: /usr/bin/journalctl -u mediamtx.service *
+$APP_USER ALL=(root) NOPASSWD: /usr/bin/systemctl show mediamtx.service *
+$APP_USER ALL=(root) NOPASSWD: /usr/bin/systemctl is-active mediamtx.service
+$APP_USER ALL=(root) NOPASSWD: /usr/bin/systemctl status mediamtx.service --no-pager
 EOF
   chmod 440 "$SUDOERS_FILE"
   log "Sudoers configured at $SUDOERS_FILE"
