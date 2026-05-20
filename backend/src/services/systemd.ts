@@ -31,6 +31,9 @@ export async function readSystemdStatus(): Promise<ServiceStatus> {
   const result = await runSafeCommand('/usr/bin/sudo', ['-n', '/usr/bin/systemctl', ...args]);
 
   if (!result.ok) {
+    process.stderr.write(
+      `[systemd] readSystemdStatus failed: ${result.reason} stderr="${result.stderr.slice(0, 200)}"\n`
+    );
     return {
       unit: ALLOWED_UNIT,
       active: false,
