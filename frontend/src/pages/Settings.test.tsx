@@ -27,24 +27,24 @@ const mockSettingsStatus = {
   metricsReachable: false,
 };
 
-const mockFetch = vi.fn();
+let mockApi: ReturnType<typeof createMockApi>;
 
 describe('Settings (read-only status panel)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Mock global fetch for /api/settings
-    globalThis.fetch = mockFetch;
+    mockApi = createMockApi();
   });
 
   it('renders loading state initially', () => {
-    mockFetch.mockReturnValue(new Promise(() => {})); // never resolves
-    wrap(createMockApi());
+    // getSettings never resolves → stays in loading
+    mockApi.getSettings.mockReturnValue(new Promise(() => {}));
+    wrap(mockApi);
     expect(screen.getByText('Loading settings…')).toBeInTheDocument();
   });
 
   it('renders error state on fetch failure', async () => {
-    mockFetch.mockRejectedValue(new Error('Network error'));
-    wrap(createMockApi());
+    mockApi.getSettings.mockRejectedValue(new Error('Network error'));
+    wrap(mockApi);
 
     await waitFor(() => {
       expect(screen.getByText(/Network error/)).toBeInTheDocument();
@@ -52,11 +52,8 @@ describe('Settings (read-only status panel)', () => {
   });
 
   it('renders the status panel with config values', async () => {
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(mockSettingsStatus),
-    });
-    wrap(createMockApi());
+    mockApi.getSettings.mockResolvedValue(mockSettingsStatus);
+    wrap(mockApi);
 
     await waitFor(() => {
       expect(screen.getByText('Settings')).toBeInTheDocument();
@@ -77,11 +74,8 @@ describe('Settings (read-only status panel)', () => {
   });
 
   it('shows "configured" indicator when password is set', async () => {
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(mockSettingsStatus),
-    });
-    wrap(createMockApi());
+    mockApi.getSettings.mockResolvedValue(mockSettingsStatus);
+    wrap(mockApi);
 
     await waitFor(() => {
       expect(screen.getByText(/api password configured/i)).toBeInTheDocument();
@@ -89,11 +83,8 @@ describe('Settings (read-only status panel)', () => {
   });
 
   it('shows "not configured" indicator when username is not set', async () => {
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(mockSettingsStatus),
-    });
-    wrap(createMockApi());
+    mockApi.getSettings.mockResolvedValue(mockSettingsStatus);
+    wrap(mockApi);
 
     await waitFor(() => {
       expect(screen.getByText(/api username not configured/i)).toBeInTheDocument();
@@ -101,11 +92,8 @@ describe('Settings (read-only status panel)', () => {
   });
 
   it('shows reachability status', async () => {
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(mockSettingsStatus),
-    });
-    wrap(createMockApi());
+    mockApi.getSettings.mockResolvedValue(mockSettingsStatus);
+    wrap(mockApi);
 
     await waitFor(() => {
       expect(screen.getByText(/mediamtx api reachable/i)).toBeInTheDocument();
@@ -114,11 +102,8 @@ describe('Settings (read-only status panel)', () => {
   });
 
   it('does NOT render any form inputs or save buttons', async () => {
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(mockSettingsStatus),
-    });
-    wrap(createMockApi());
+    mockApi.getSettings.mockResolvedValue(mockSettingsStatus);
+    wrap(mockApi);
 
     await waitFor(() => {
       expect(screen.getByText('Settings')).toBeInTheDocument();
@@ -132,11 +117,8 @@ describe('Settings (read-only status panel)', () => {
   });
 
   it('shows read-only banner', async () => {
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(mockSettingsStatus),
-    });
-    wrap(createMockApi());
+    mockApi.getSettings.mockResolvedValue(mockSettingsStatus);
+    wrap(mockApi);
 
     await waitFor(() => {
       expect(screen.getByText(/configuration is managed via/i)).toBeInTheDocument();

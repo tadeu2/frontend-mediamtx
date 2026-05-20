@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, renderHook, act } from '@testing-library/react';
 import { AuthProvider, useAuth } from './AuthContext';
 
@@ -37,7 +37,7 @@ describe('AuthContext', () => {
     });
 
     it('restores token from sessionStorage if present', () => {
-      sessionStorage.setItem('adminAuthToken', 'restored-token-abc');
+      sessionStorage.setItem('mediamtxAdminToken', 'restored-token-abc');
       wrap(<TestConsumer />);
       expect(screen.getByTestId('authenticated')).toHaveTextContent('true');
       expect(screen.getByTestId('token-preview')).toHaveTextContent('rest...');
@@ -54,7 +54,7 @@ describe('AuthContext', () => {
     it('stores token in sessionStorage after login', () => {
       wrap(<TestConsumer />);
       act(() => screen.getByTestId('login-btn').click());
-      expect(sessionStorage.getItem('adminAuthToken')).toBe('test-token-12345');
+      expect(sessionStorage.getItem('mediamtxAdminToken')).toBe('test-token-12345');
     });
 
     it('shows token preview after login', () => {
@@ -76,7 +76,7 @@ describe('AuthContext', () => {
       wrap(<TestConsumer />);
       act(() => screen.getByTestId('login-btn').click());
       act(() => screen.getByTestId('logout-btn').click());
-      expect(sessionStorage.getItem('adminAuthToken')).toBeNull();
+      expect(sessionStorage.getItem('mediamtxAdminToken')).toBeNull();
     });
   });
 
@@ -85,6 +85,39 @@ describe('AuthContext', () => {
       expect(() => renderHook(() => useAuth())).toThrow(
         'useAuth must be used within an AuthProvider',
       );
+    });
+  });
+
+  describe('401 unauthorized handling', () => {
+    beforeEach(() => {
+      // Log in first
+      sessionStorage.setItem('mediamtxAdminToken', 'valid-token');
+    });
+
+    afterEach(() => {
+      window.dispatchEvent(new CustomEvent('auth:unauthorized', { detail: '' }));
+    });
+
+    it('restores authenticated state from sessionStorage', () => {
+      wrap(<TestConsumer />);
+      expect(screen.getByTestId('authenticated')).toHaveTextContent('true');
+    });
+
+    it('clears token when auth:unauthorized event fires', () => {
+      wrap(<TestConsumer />);
+      act(() => {
+        window.dispatchEvent(new CustomEvent('auth:unauthorized', { detail: 'Token inválido o caducado' }));
+      });
+      expect(screen.getByTestId('authenticated')).toHaveTextContent('false');
+      expect(screen.getByTestId('token-preview')).toHaveTextContent('no-token');
+    });
+
+    it('removes token from sessionStorage when auth:unauthorized fires', () => {
+      wrap(<TestConsumer />);
+      act(() => {
+        window.dispatchEvent(new CustomEvent('auth:unauthorized', { detail: 'Token inválido o caducado' }));
+      });
+      expect(sessionStorage.getItem('mediamtxAdminToken')).toBeNull();
     });
   });
 });

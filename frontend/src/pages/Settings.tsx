@@ -1,19 +1,6 @@
 import { useEffect, useState } from 'react';
-
-interface SettingsStatus {
-  generatedAt: string;
-  bindAddress: string;
-  port: number;
-  mediamtxApiUrl: string;
-  mediamtxMetricsUrl: string;
-  mediamtxConfigPath: string;
-  authEnabled: boolean;
-  mediamtxApiUsernameConfigured: boolean;
-  mediamtxApiPasswordConfigured: boolean;
-  adminAuthTokenConfigured: boolean;
-  mediamtxApiReachable: boolean;
-  metricsReachable: boolean;
-}
+import { useApi } from '../api/ApiContext';
+import type { SettingsStatusResponse } from '../api/client';
 
 /* ---- inline styles ---- */
 
@@ -41,34 +28,38 @@ function Badge({ enabled, label }: { enabled: boolean; label: string }) {
 }
 
 export function Settings() {
-  const [data, setData] = useState<SettingsStatus | null>(null);
+  const api = useApi();
+  const [data, setData] = useState<SettingsStatusResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const ac = new AbortController();
     let cancelled = false;
-    setLoading(true);
-    setError(null);
 
-    fetch('/api/settings')
-      .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}: ${r.statusText}`);
-        return r.json();
-      })
-      .then((d: SettingsStatus) => {
+    async function load() {
+      try {
+        setLoading(true);
+        setError(null);
+        const result = await api.getSettings(ac.signal);
         if (!cancelled) {
-          setData(d);
-          setLoading(false);
+          setData(result);
         }
-      })
-      .catch((e: Error) => {
-        if (!cancelled) {
-          setError(e.message);
-          setLoading(false);
+      } catch (err) {
+        if (!cancelled && !ac.signal.aborted) {
+          setError(err instanceof Error ? err.message : 'Unknown error');
         }
-      });
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
 
-    return () => { cancelled = true; };
+    load();
+    return () => {
+      cancelled = true;
+      ac.abort();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (loading) return <div style={{ color: 'var(--text-muted)', padding: '2rem 0' }}>Loading settings…</div>;

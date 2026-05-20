@@ -3,6 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { Login } from './Login';
 
 const mockLogin = vi.fn();
+let mockAuthError: string | null = null;
 
 vi.mock('../api/AuthContext', () => ({
   useAuth: () => ({
@@ -10,12 +11,14 @@ vi.mock('../api/AuthContext', () => ({
     isAuthenticated: false,
     token: null,
     logout: vi.fn(),
+    authError: mockAuthError,
   }),
 }));
 
 describe('Login page', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockAuthError = null;
   });
 
   it('renders token input and submit button', () => {
@@ -54,5 +57,11 @@ describe('Login page', () => {
     render(<Login />);
     const input = screen.getByPlaceholderText('Paste your admin token…');
     expect(input).toHaveAttribute('type', 'password');
+  });
+
+  it('displays error message when authError is set', () => {
+    mockAuthError = 'Token inválido o caducado';
+    render(<Login />);
+    expect(screen.getByText(/Token inválido o caducado/)).toBeInTheDocument();
   });
 });

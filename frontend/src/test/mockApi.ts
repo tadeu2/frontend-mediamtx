@@ -19,5 +19,6 @@ export function createMockApi(): Mocked<ApiClient> {
     getMetrics: vi.fn().mockImplementation(never),
     getConfig: vi.fn().mockImplementation(never),
     getDiagnostics: vi.fn().mockImplementation(never),
+    getSettings: vi.fn().mockImplementation(never),
   };
 }

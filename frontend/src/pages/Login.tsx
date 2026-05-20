@@ -55,7 +55,7 @@ const s: Record<string, React.CSSProperties> = {
 };
 
 export function Login() {
-  const { login } = useAuth();
+  const { login, authError } = useAuth();
   const [tokenInput, setTokenInput] = useState('');
 
   function handleSubmit(e: React.FormEvent) {
@@ -73,6 +73,20 @@ export function Login() {
           This admin interface requires an authentication token.
           Enter your <code>ADMIN_AUTH_TOKEN</code> below to continue.
         </p>
+        {authError && (
+          <div style={{
+            background: 'rgba(248,113,113,0.1)',
+            border: '1px solid rgba(248,113,113,0.25)',
+            borderRadius: '6px',
+            padding: '0.6rem 0.75rem',
+            color: 'var(--error)',
+            fontSize: '0.85rem',
+            marginBottom: '1rem',
+            lineHeight: 1.4,
+          }}>
+            {authError}
+          </div>
+        )}
         <form onSubmit={handleSubmit}>
           <input
             style={s.input}

@@ -4,7 +4,7 @@ interface ApiClientOptions {
   baseUrl: string;
 }
 
-const STORAGE_KEY = 'adminAuthToken';
+const STORAGE_KEY = 'mediamtxAdminToken';
 
 function getToken(): string | null {
   return sessionStorage.getItem(STORAGE_KEY);
@@ -27,8 +27,8 @@ export function createApiClient(options: ApiClientOptions) {
     });
 
     if (res.status === 401) {
-      // Token expired or invalid — clear it so the auth gate catches it
       sessionStorage.removeItem(STORAGE_KEY);
+      window.dispatchEvent(new CustomEvent('auth:unauthorized', { detail: 'Token inválido o caducado' }));
       throw new Error('API error: 401 Unauthorized');
     }
 
@@ -53,7 +53,23 @@ export function createApiClient(options: ApiClientOptions) {
     getMetrics: (signal?: AbortSignal) => request<MetricsSummary>('/api/metrics', signal),
     getConfig: (signal?: AbortSignal) => request<ConfigView>('/api/config', signal),
     getDiagnostics: (signal?: AbortSignal) => request<SafeDiagnosticsResponse>('/api/diagnostics/safe-check', signal),
+    getSettings: (signal?: AbortSignal) => request<SettingsStatusResponse>('/api/settings', signal),
   };
+}
+
+export interface SettingsStatusResponse {
+  generatedAt: string;
+  bindAddress: string;
+  port: number;
+  mediamtxApiUrl: string;
+  mediamtxMetricsUrl: string;
+  mediamtxConfigPath: string;
+  authEnabled: boolean;
+  mediamtxApiUsernameConfigured: boolean;
+  mediamtxApiPasswordConfigured: boolean;
+  adminAuthTokenConfigured: boolean;
+  mediamtxApiReachable: boolean;
+  metricsReachable: boolean;
 }
 
 interface ServiceStatusResponse {
