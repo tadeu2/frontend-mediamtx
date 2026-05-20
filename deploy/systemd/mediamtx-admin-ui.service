@@ -17,13 +17,14 @@ RestartSec=5
 
 # Environment
 Environment=NODE_ENV=production
-EnvironmentFile=/opt/mediamtx-admin-ui/backend/.env
 Environment=BIND_ADDRESS=127.0.0.1
 Environment=PORT=9088
 Environment=MEDIAMTX_API_URL=http://127.0.0.1:9997
 Environment=MEDIAMTX_METRICS_URL=http://127.0.0.1:9998/metrics
 Environment=MEDIAMTX_CONFIG_PATH=/etc/mediamtx/mediamtx.yml
 # Environment=ADMIN_AUTH_TOKEN=change-me
+# Values in .env override the defaults above.
+EnvironmentFile=-/opt/mediamtx-admin-ui/backend/.env
 
 # Security hardening
 NoNewPrivileges=true
