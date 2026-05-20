@@ -1,74 +1,156 @@
-import { readFileSync } from 'node:fs';
-import { readFile, writeFile } from 'node:fs/promises';
-import { existsSync } from 'node:fs';
-import { resolve } from 'node:path';
+/**
+ * SettingsManager — read-only config status.
+ *
+ * Settings are configured ONLY via environment variables (backend/.env).
+ * This service exposes a read-only view of the current effective config
+ * with secrets redacted and reachability metadata.
+ *
+ * There is no PATCH, no settings.json persistence, no mutation.
+ */
 
-export interface AppSettings {
+import { createMediaMTXClient } from './mediamtx-api';
+
+export interface SettingsStatus {
+  generatedAt: string;
+  bindAddress: string;
+  port: number;
   mediamtxApiUrl: string;
-  mediamtxApiUsername: string;
-  mediamtxApiPassword: string;
   mediamtxMetricsUrl: string;
   mediamtxConfigPath: string;
+  authEnabled: boolean;
+  mediamtxApiUsernameConfigured: boolean;
+  mediamtxApiPasswordConfigured: boolean;
+  adminAuthTokenConfigured: boolean;
+  mediamtxApiReachable: boolean;
+  metricsReachable: boolean;
 }
 
-const DEFAULT_SETTINGS: AppSettings = {
-  mediamtxApiUrl: 'http://127.0.0.1:9997',
-  mediamtxApiUsername: '',
-  mediamtxApiPassword: '',
-  mediamtxMetricsUrl: 'http://127.0.0.1:9998/metrics',
-  mediamtxConfigPath: '/etc/mediamtx/mediamtx.yml',
-};
+function now(): string {
+  return new Date().toISOString();
+}
 
-type SettingsPartial = { [K in keyof AppSettings]?: AppSettings[K] };
+/** Strip userinfo (username:password@) from a URL string. */
+export function stripUserinfo(url: string): string {
+  try {
+    const parsed = new URL(url);
+    if (parsed.username || parsed.password) {
+      parsed.username = '';
+      parsed.password = '';
+      return parsed.toString();
+    }
+    return url;
+  } catch {
+    return url;
+  }
+}
 
 export class SettingsManager {
-  private settings: AppSettings;
-  private readonly filePath: string;
+  private readonly bindAddress: string;
+  private readonly port: number;
+  private readonly mediamtxApiUrl: string;
+  private readonly mediamtxApiUsername: string;
+  private readonly mediamtxApiPassword: string;
+  private readonly mediamtxMetricsUrl: string;
+  private readonly mediamtxConfigPath: string;
+  private readonly authTokenConfigured: boolean;
 
-  constructor(filePath?: string, envOverrides?: SettingsPartial) {
-    this.filePath = filePath ?? resolve(process.cwd(), 'settings.json');
-    this.settings = { ...DEFAULT_SETTINGS };
-
-    if (existsSync(this.filePath)) {
-      try {
-        const raw = readFileSync(this.filePath, 'utf8');
-        const data = JSON.parse(raw) as SettingsPartial;
-        this.merge(data);
-      } catch { /* ignore corrupt files */ }
-    }
-
-    if (envOverrides) this.merge(envOverrides);
+  constructor(config: {
+    host: string;
+    port: number;
+    mediamtxApiUrl: string;
+    mediamtxApiUsername?: string;
+    mediamtxApiPassword?: string;
+    mediamtxMetricsUrl: string;
+    mediamtxConfigPath: string;
+    authToken?: string;
+  }) {
+    this.bindAddress = config.host;
+    this.port = config.port;
+    this.mediamtxApiUrl = config.mediamtxApiUrl;
+    this.mediamtxApiUsername = config.mediamtxApiUsername ?? '';
+    this.mediamtxApiPassword = config.mediamtxApiPassword ?? '';
+    this.mediamtxMetricsUrl = config.mediamtxMetricsUrl;
+    this.mediamtxConfigPath = config.mediamtxConfigPath;
+    this.authTokenConfigured = !!config.authToken;
   }
 
-  get(): AppSettings {
-    return { ...this.settings };
-  }
-
-  getRedacted(): AppSettings {
+  /** Return the current effective config with secrets redacted. */
+  get(): {
+    mediamtxApiUrl: string;
+    mediamtxApiUsername: string;
+    mediamtxApiPassword: string;
+    mediamtxMetricsUrl: string;
+    mediamtxConfigPath: string;
+  } {
     return {
-      ...this.settings,
-      mediamtxApiPassword: this.settings.mediamtxApiPassword ? '••••••••' : '',
+      mediamtxApiUrl: this.mediamtxApiUrl,
+      mediamtxApiUsername: this.mediamtxApiUsername,
+      mediamtxApiPassword: this.mediamtxApiPassword,
+      mediamtxMetricsUrl: this.mediamtxMetricsUrl,
+      mediamtxConfigPath: this.mediamtxConfigPath,
     };
   }
 
-  async update(partial: SettingsPartial): Promise<AppSettings> {
-    this.merge(partial);
-    await writeFile(this.filePath, JSON.stringify(this.settings, null, 2), 'utf8');
-    return this.getRedacted();
+  /** Return a redacted view (password masked). */
+  getRedacted(): {
+    mediamtxApiUrl: string;
+    mediamtxApiUsername: string;
+    mediamtxApiPassword: string;
+    mediamtxMetricsUrl: string;
+    mediamtxConfigPath: string;
+  } {
+    return {
+      ...this.get(),
+      mediamtxApiPassword: this.mediamtxApiPassword ? '••••••••' : '',
+    };
   }
 
+  /** Return config status with reachability checks and all secrets excluded. */
+  async getStatus(): Promise<SettingsStatus> {
+    const mtxClient = createMediaMTXClient(
+      this.mediamtxApiUrl,
+      this.mediamtxApiUsername,
+      this.mediamtxApiPassword,
+    );
+
+    const [apiReachable, metricsReachable] = await Promise.all([
+      mtxClient.isAvailable(),
+      this.checkMetricsReachable(),
+    ]);
+
+    return {
+      generatedAt: now(),
+      bindAddress: this.bindAddress,
+      port: this.port,
+      mediamtxApiUrl: stripUserinfo(this.mediamtxApiUrl),
+      mediamtxMetricsUrl: stripUserinfo(this.mediamtxMetricsUrl),
+      mediamtxConfigPath: this.mediamtxConfigPath,
+      authEnabled: this.authTokenConfigured,
+      mediamtxApiUsernameConfigured: this.mediamtxApiUsername.length > 0,
+      mediamtxApiPasswordConfigured: this.mediamtxApiPassword.length > 0,
+      adminAuthTokenConfigured: this.authTokenConfigured,
+      mediamtxApiReachable: apiReachable,
+      metricsReachable,
+    };
+  }
+
+  /** Return the MediaMTX API credentials for the admin routes. */
   getCredentials(): { username: string; password: string } {
     return {
-      username: this.settings.mediamtxApiUsername,
-      password: this.settings.mediamtxApiPassword,
+      username: this.mediamtxApiUsername,
+      password: this.mediamtxApiPassword,
     };
   }
 
-  private merge(partial: SettingsPartial): void {
-    for (const [key, value] of Object.entries(partial)) {
-      if (value !== undefined && value !== null) {
-        (this.settings as unknown as Record<string, string>)[key] = String(value);
-      }
+  private async checkMetricsReachable(): Promise<boolean> {
+    try {
+      const res = await fetch(this.mediamtxMetricsUrl, {
+        method: 'GET',
+        signal: AbortSignal.timeout(3_000),
+      });
+      return res.ok;
+    } catch {
+      return false;
     }
   }
 }

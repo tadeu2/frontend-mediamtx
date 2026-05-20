@@ -5,36 +5,22 @@ interface SettingsRoutesOptions {
   settingsManager: SettingsManager;
 }
 
-function now() {
-  return new Date().toISOString();
-}
-
 export const settingsRoutes: FastifyPluginAsync<SettingsRoutesOptions> = async (fastify, options) => {
   const { settingsManager } = options;
 
-  fastify.get('/api/settings', async () => ({
-    generatedAt: now(),
-    source: 'settings',
-    settings: settingsManager.getRedacted(),
-  }));
-
-  fastify.patch<{ Body: Record<string, string | undefined> }>('/api/settings', async (request) => {
-    const allowedKeys = [
-      'mediamtxApiUrl',
-      'mediamtxApiUsername',
-      'mediamtxApiPassword',
-      'mediamtxMetricsUrl',
-      'mediamtxConfigPath',
-    ];
-
-    const partial: Record<string, string | undefined> = {};
-    for (const key of allowedKeys) {
-      if (request.body?.[key] !== undefined) {
-        partial[key] = String(request.body[key]);
-      }
-    }
-
-    const updated = await settingsManager.update(partial);
-    return { generatedAt: now(), source: 'settings', settings: updated };
+  /**
+   * GET /api/settings — read-only config status.
+   *
+   * Returns the current effective configuration with:
+   * - Secrets excluded (no passwords, tokens, usernames)
+   * - URLs sanitised (userinfo stripped)
+   * - Boolean flags for configuration status
+   * - Reachability status for external services
+   *
+   * This endpoint does NOT expose editable settings.
+   * All configuration is managed via backend/.env.
+   */
+  fastify.get('/api/settings', async () => {
+    return settingsManager.getStatus();
   });
 };

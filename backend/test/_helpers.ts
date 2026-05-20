@@ -6,6 +6,7 @@ import { authPlugin } from '../src/plugins/auth';
 import { corsPlugin } from '../src/plugins/cors';
 import { errorHandlerPlugin } from '../src/plugins/error-handler';
 import { adminRoutes } from '../src/routes/admin';
+import { settingsRoutes } from '../src/routes/settings';
 import { SettingsManager } from '../src/services/settings';
 
 /**
@@ -41,18 +42,13 @@ export async function createTestServer(options?: {
     await corsPlugin(app, { origin: config.corsOrigin });
     await errorHandlerPlugin(app);
     await authPlugin(app, { expectedToken: config.authToken });
-    const settingsManager = new SettingsManager(undefined, {
-      mediamtxApiUrl: config.mediamtxApiUrl,
-      mediamtxApiUsername: '',
-      mediamtxApiPassword: '',
-      mediamtxMetricsUrl: config.mediamtxMetricsUrl,
-      mediamtxConfigPath: config.mediamtxConfigPath,
-    });
+    const settingsManager = new SettingsManager(config);
     await adminRoutes(app, {
       settingsManager,
       mediamtxMetricsUrl: config.mediamtxMetricsUrl,
       mediamtxConfigPath: config.mediamtxConfigPath
     });
+    await settingsRoutes(app, { settingsManager });
 
     // /healthz is defined in server.ts; replicate it for tests
     app.get('/healthz', async () => ({

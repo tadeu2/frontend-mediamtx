@@ -17,14 +17,8 @@ export function buildServer() {
   const frontendDist = resolve(process.cwd(), '../frontend/dist');
   const frontendAssets = resolve(frontendDist, 'assets');
 
-  /* ── Dynamic settings (persisted to settings.json) ── */
-  const settingsManager = new SettingsManager(undefined, {
-    mediamtxApiUrl: config.mediamtxApiUrl,
-    mediamtxApiUsername: config.mediamtxApiUsername ?? '',
-    mediamtxApiPassword: config.mediamtxApiPassword ?? '',
-    mediamtxMetricsUrl: config.mediamtxMetricsUrl,
-    mediamtxConfigPath: config.mediamtxConfigPath,
-  });
+  /* ── Read-only settings status (env-based, no mutation) ── */
+  const settingsManager = new SettingsManager(config);
 
   /* ── CORS (self-contained, can be encapsulated) ── */
   void app.register(corsPlugin, { origin: config.corsOrigin });

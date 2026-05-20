@@ -2,16 +2,22 @@ import type { HealthResponse, StreamsResponse, LogsResponse, MetricsSummary, Con
 
 interface ApiClientOptions {
   baseUrl: string;
-  authToken?: string;
+}
+
+const STORAGE_KEY = 'adminAuthToken';
+
+function getToken(): string | null {
+  return sessionStorage.getItem(STORAGE_KEY);
 }
 
 export function createApiClient(options: ApiClientOptions) {
-  const { baseUrl, authToken } = options;
+  const { baseUrl } = options;
 
   async function request<T>(path: string, signal?: AbortSignal): Promise<T> {
     const headers: Record<string, string> = {};
-    if (authToken) {
-      headers['Authorization'] = `Bearer ${authToken}`;
+    const token = getToken();
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
     }
 
     const res = await fetch(`${baseUrl}${path}`, {
@@ -19,6 +25,12 @@ export function createApiClient(options: ApiClientOptions) {
       credentials: 'include',
       signal,
     });
+
+    if (res.status === 401) {
+      // Token expired or invalid — clear it so the auth gate catches it
+      sessionStorage.removeItem(STORAGE_KEY);
+      throw new Error('API error: 401 Unauthorized');
+    }
 
     if (!res.ok) {
       throw new Error(`API error: ${res.status} ${res.statusText}`);

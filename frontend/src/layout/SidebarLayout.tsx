@@ -8,6 +8,7 @@ import { Diagnostics } from '../pages/Diagnostics';
 import { Settings } from '../pages/Settings';
 import { usePermissions } from '../api/ApiContext';
 import { ADMIN_ITEMS } from '../config/permissions';
+import { useAuth } from '../api/AuthContext';
 
 type Route = 'dashboard' | 'streams' | 'logs' | 'metrics' | 'config' | 'diagnostics' | 'settings';
 
@@ -109,10 +110,28 @@ const styles: Record<string, React.CSSProperties> = {
     overflowY: 'auto',
     maxWidth: 'calc(100vw - 220px)',
   },
+  logoutSection: {
+    marginTop: 'auto',
+    padding: '1rem 1.25rem 0.5rem',
+    borderTop: '1px solid var(--border)',
+  },
+  logoutButton: {
+    display: 'block',
+    width: '100%',
+    padding: '0.5rem 0',
+    fontSize: '0.8rem',
+    color: 'var(--text-muted)',
+    background: 'none',
+    border: '1px solid var(--border)',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    textAlign: 'center',
+  },
 };
 
 export function SidebarLayout() {
   const permissions = usePermissions();
+  const { isAuthenticated, logout } = useAuth();
   const [route, setRoute] = useState<Route>(() => resolveRoute(window.location.hash));
 
   useEffect(() => {
@@ -203,6 +222,19 @@ export function SidebarLayout() {
             </>
           )}
         </nav>
+
+        {/* ---- Logout section ---- */}
+        <div style={styles.logoutSection}>
+          <button
+            style={styles.logoutButton}
+            onClick={() => {
+              logout();
+              window.location.hash = '';
+            }}
+          >
+            Logout
+          </button>
+        </div>
       </aside>
       <main style={styles.content}>
         <Page />
