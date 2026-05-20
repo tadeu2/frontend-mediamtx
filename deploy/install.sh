@@ -44,6 +44,10 @@ else
   log "User $APP_USER already exists"
 fi
 
+# Allow journalctl without sudo (read-only access to systemd journal)
+usermod -aG systemd-journal "$APP_USER" 2>/dev/null || true
+log "User $APP_USER added to systemd-journal group"
+
 # ── Copy app files ─────────────────────────────────────────────
 mkdir -p "$APP_DIR"
 if [[ "$SOURCE_DIR" != "$APP_DIR" ]]; then
@@ -90,11 +94,11 @@ log "Permissions set"
 SUDOERS_FILE="/etc/sudoers.d/mediamtx-admin-ui"
 if [[ ! -f "$SUDOERS_FILE" ]]; then
   cat > "$SUDOERS_FILE" << EOF
-# mediamtx-admin-ui: allow read-only journalctl and systemctl
-$APP_USER ALL=(root) NOPASSWD: /usr/bin/journalctl -u mediamtx.service *
+# mediamtx-admin-ui: allow read-only systemctl for mediamtx
 $APP_USER ALL=(root) NOPASSWD: /usr/bin/systemctl show mediamtx.service *
 $APP_USER ALL=(root) NOPASSWD: /usr/bin/systemctl is-active mediamtx.service
 $APP_USER ALL=(root) NOPASSWD: /usr/bin/systemctl status mediamtx.service --no-pager
+# journalctl is available through systemd-journal group, no sudo needed
 EOF
   chmod 440 "$SUDOERS_FILE"
   log "Sudoers configured at $SUDOERS_FILE"

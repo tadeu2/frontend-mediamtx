@@ -27,7 +27,9 @@ Environment=MEDIAMTX_CONFIG_PATH=/etc/mediamtx/mediamtx.yml
 EnvironmentFile=-/opt/mediamtx-admin-ui/backend/.env
 
 # Security hardening
-NoNewPrivileges=true
+# NoNewPrivileges disabled: sudo needed for systemctl/journalctl
+# with allowlisted sudoers entries.
+NoNewPrivileges=false
 ProtectSystem=strict
 ProtectHome=true
 PrivateTmp=true
