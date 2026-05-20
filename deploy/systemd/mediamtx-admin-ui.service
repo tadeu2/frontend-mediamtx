@@ -33,7 +33,9 @@ ProtectHome=true
 PrivateTmp=true
 CapabilityBoundingSet=
 AmbientCapabilities=
-RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+# Node/Fastify calls os.networkInterfaces() while logging listen addresses,
+# which uses AF_NETLINK on Linux.
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX AF_NETLINK
 ReadWritePaths=/opt/mediamtx-admin-ui
 
 [Install]
