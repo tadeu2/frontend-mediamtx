@@ -29,6 +29,8 @@ export function buildServer() {
   /* ── Routes inherit root-scope hooks ── */
   void app.register(adminRoutes, {
     mediamtxApiUrl: config.mediamtxApiUrl,
+    mediamtxApiUsername: config.mediamtxApiUsername,
+    mediamtxApiPassword: config.mediamtxApiPassword,
     mediamtxMetricsUrl: config.mediamtxMetricsUrl,
     mediamtxConfigPath: config.mediamtxConfigPath
   });

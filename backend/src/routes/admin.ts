@@ -19,6 +19,8 @@ import { createMediaMTXClient } from '../services/mediamtx-api';
 
 interface AdminRoutesOptions {
   mediamtxApiUrl: string;
+  mediamtxApiUsername?: string;
+  mediamtxApiPassword?: string;
   mediamtxMetricsUrl: string;
   mediamtxConfigPath: string;
 }
@@ -34,7 +36,7 @@ function mapPathStatus(item: { available?: boolean; online?: boolean }): StreamP
 }
 
 export const adminRoutes: FastifyPluginAsync<AdminRoutesOptions> = async (fastify, options) => {
-  const mtx = createMediaMTXClient(options.mediamtxApiUrl);
+  const mtx = createMediaMTXClient(options.mediamtxApiUrl, options.mediamtxApiUsername, options.mediamtxApiPassword);
 
   fastify.get('/api/health', async (): Promise<HealthResponse> => ({
     ok: true,

@@ -2,6 +2,8 @@ export interface AppConfig {
   host: string;
   port: number;
   mediamtxApiUrl: string;
+  mediamtxApiUsername?: string;
+  mediamtxApiPassword?: string;
   mediamtxMetricsUrl: string;
   mediamtxConfigPath: string;
   authToken?: string;
@@ -25,6 +27,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     host: env.BIND_ADDRESS ?? DEFAULT_HOST,
     port: toInt(env.PORT, DEFAULT_PORT),
     mediamtxApiUrl: env.MEDIAMTX_API_URL ?? DEFAULT_MEDIAMTX_API_URL,
+    mediamtxApiUsername: env.MEDIAMTX_API_USERNAME,
+    mediamtxApiPassword: env.MEDIAMTX_API_PASSWORD,
     mediamtxMetricsUrl: env.MEDIAMTX_METRICS_URL ?? DEFAULT_MEDIAMTX_METRICS_URL,
     mediamtxConfigPath: env.MEDIAMTX_CONFIG_PATH ?? DEFAULT_MEDIAMTX_CONFIG_PATH,
     authToken: env.ADMIN_AUTH_TOKEN,

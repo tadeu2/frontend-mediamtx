@@ -22,11 +22,22 @@ export interface MediaMTXClient {
   fetchGlobalConfig(): Promise<GlobalConfigResponse>;
 }
 
-export function createMediaMTXClient(baseUrl: string): MediaMTXClient {
+export function createMediaMTXClient(baseUrl: string, username?: string, password?: string): MediaMTXClient {
+  const authHeader =
+    username && password
+      ? 'Basic ' + Buffer.from(`${username}:${password}`).toString('base64')
+      : undefined;
+
   async function request<T>(path: string): Promise<T | null> {
     try {
+      const headers: Record<string, string> = {};
+      if (authHeader) {
+        headers['Authorization'] = authHeader;
+      }
+
       const res = await fetch(`${baseUrl}${path}`, {
         method: 'GET',
+        headers,
         signal: AbortSignal.timeout(3_000),
       });
       if (!res.ok) return null;
