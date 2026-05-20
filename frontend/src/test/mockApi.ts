@@ -1,13 +1,14 @@
-import { vi } from 'vitest';
+import { Mocked, vi } from 'vitest';
 import type { ApiClient } from '../api/ApiContext';
 
 /**
  * Creates a fully-mocked ApiClient where every method is a `vi.fn()`.
- * Override individual methods per test scenario.
+ * Returns `Mocked<ApiClient>` so TypeScript allows `.mockResolvedValue()`
+ * and `.mockRejectedValue()` in tests.
  *
  * Default: each method returns a never-resolving promise (simulates loading).
  */
-export function createMockApi(): ApiClient {
+export function createMockApi(): Mocked<ApiClient> {
   const never = () => new Promise<never>(() => {});
 
   return {
