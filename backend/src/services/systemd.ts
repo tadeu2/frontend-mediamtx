@@ -26,7 +26,7 @@ export async function readSystemdStatus(): Promise<ServiceStatus> {
     ALLOWED_UNIT,
     '--no-pager',
     '--property',
-    'Id,ActiveState,SubState,ActiveEnterTimestamp'
+    'Id,ActiveState,SubState,LoadState,UnitFileState,MainPID,ExecMainStatus,NRestarts'
   ];
   const result = await runSafeCommand('/usr/bin/systemctl', args);
 

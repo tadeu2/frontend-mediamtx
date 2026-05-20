@@ -6,6 +6,20 @@ const ALLOWED_UNIT = 'mediamtx.service';
 const DEFAULT_LINES = 100;
 const MAX_LINES = 300;
 
+// Patterns to redact from log messages before returning to the client.
+// Keep the lines ordered by specificity (narrowest match first).
+const CREDENTIAL_PATTERNS: { pattern: RegExp; replacement: string }[] = [
+  // Named env-var patterns — no \b anchor because underscores are \w chars
+  { pattern: /(MEDIAMTX_API_PASSWORD\s*=\s*)\S+/gi, replacement: '$1***REDACTED***' },
+  // Generic / keyword-based patterns — \b ensures we match whole words
+  { pattern: /(Authorization:\s*Basic\s+)\S+/gi, replacement: '$1***REDACTED***' },
+  { pattern: /(Authorization:\s*Bearer\s+)\S+/gi, replacement: '$1***REDACTED***' },
+  { pattern: /(\bpassword\s*=\s*)\S+/gi, replacement: '$1***REDACTED***' },
+  { pattern: /(\btoken\s*=\s*)\S+/gi, replacement: '$1***REDACTED***' },
+  { pattern: /(\bapiKey\s*=\s*)\S+/gi, replacement: '$1***REDACTED***' },
+  { pattern: /(\bsecret\s*=\s*)\S+/gi, replacement: '$1***REDACTED***' },
+];
+
 function now() {
   return new Date().toISOString();
 }
@@ -24,6 +38,17 @@ function mapLevel(level?: 'debug' | 'info' | 'warning' | 'error') {
   return undefined;
 }
 
+/**
+ * Redact credential-like patterns from a log line.
+ */
+export function redactCredentials(line: string): string {
+  let redacted = line;
+  for (const { pattern, replacement } of CREDENTIAL_PATTERNS) {
+    redacted = redacted.replace(pattern, replacement);
+  }
+  return redacted;
+}
+
 function parseLogLine(line: string): LogEntry {
   const trimmed = line.trim();
   const firstSpace = trimmed.indexOf(' ');
@@ -33,7 +58,7 @@ function parseLogLine(line: string): LogEntry {
   return {
     timestamp: Number.isNaN(parsedTs) ? now() : new Date(parsedTs).toISOString(),
     level: 'unknown',
-    message: firstSpace > 0 ? trimmed.slice(firstSpace + 1).trim() : trimmed,
+    message: firstSpace > 0 ? redactCredentials(trimmed.slice(firstSpace + 1).trim()) : redactCredentials(trimmed),
     unit: ALLOWED_UNIT,
     source: 'journalctl'
   };

@@ -99,21 +99,10 @@ else
   log "Polkit not found; systemctl may need alternative configuration"
 fi
 
-# ── Sudoers for journalctl (systemd-journal may not be enough) ─
-SUDOERS_FILE="/etc/sudoers.d/mediamtx-admin-ui"
-if [[ ! -f "$SUDOERS_FILE" ]]; then
-  cat > "$SUDOERS_FILE" << EOF
-# mediamtx-admin-ui: allow read-only systemctl for mediamtx
-$APP_USER ALL=(root) NOPASSWD: /usr/bin/systemctl show mediamtx.service *
-$APP_USER ALL=(root) NOPASSWD: /usr/bin/systemctl is-active mediamtx.service
-$APP_USER ALL=(root) NOPASSWD: /usr/bin/systemctl status mediamtx.service --no-pager
-# journalctl is available through systemd-journal group, no sudo needed
-EOF
-  chmod 440 "$SUDOERS_FILE"
-  log "Sudoers configured at $SUDOERS_FILE"
-else
-  log "Sudoers already exists, skipping"
-fi
+# ── No sudoers needed ────────────────────────────────────────
+# systemd access: polkit rules handle read-only systemctl commands.
+# journald access: the mediamtx-ui user MUST be in the systemd-journal group
+# (added above). No sudoers entries are required.
 
 # ── Enable and start service ───────────────────────────────────
 systemctl daemon-reload

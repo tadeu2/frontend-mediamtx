@@ -102,7 +102,7 @@ MVP: **Same LXC + systemd** (ADR-0001). No Docker.
 
 - Backend listens `127.0.0.1:9088` by default
 - Frontend served by Vite dev server or built as static files served by the backend
-- Systemd service user: dedicated `mediamtx-ui` user with minimal sudoers entries
+- Systemd service user: dedicated `mediamtx-ui` user; polkit handles systemctl access, systemd-journal group handles journalctl access
 - Reverse proxy optional (only if already present, requires new ADR)
 
 ## Security model

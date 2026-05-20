@@ -38,17 +38,28 @@ It is a read-only operator UI that runs **beside** MediaMTX in the same LXC.
 3. No MediaMTX restart/reload actions in MVP.
 4. Redact secrets, tokens, and credentials before rendering config or logs.
 5. Keep all diagnostics bounded by line count and timeout.
+6. The `backend/.env` file contains secrets. Restrict permissions outside the repo:
+   ```bash
+   chmod 600 /opt/mediamtx-admin-ui/backend/.env
+   chown mediamtx-ui:mediamtx-ui /opt/mediamtx-admin-ui/backend/.env
+   ```
+   See `.env.example` for the full warning about `EnvironmentFile` override behavior.
 
 ## Configuration
 
-Recommended environment variables:
+The backend reads environment variables (see `backend/.env.example` for all options):
 
-- `MEDIAMTX_ADMIN_UI_BIND`
-- `MEDIAMTX_ADMIN_UI_PORT`
-- `MEDIAMTX_API_URL`
-- `MEDIAMTX_METRICS_URL`
-- `MEDIAMTX_CONFIG_PATH`
-- `MEDIAMTX_LOG_LIMIT`
+| Variable | Purpose | Default |
+|---|---|---|
+| `BIND_ADDRESS` | IP the backend listens on. Use `127.0.0.1` for local-only. | `127.0.0.1` |
+| `PORT` | TCP port | `9088` |
+| `MEDIAMTX_API_URL` | MediaMTX API base URL | `http://127.0.0.1:9997` |
+| `MEDIAMTX_METRICS_URL` | MediaMTX metrics endpoint | `http://127.0.0.1:9998/metrics` |
+| `MEDIAMTX_CONFIG_PATH` | Path to `mediamtx.yml` | `/etc/mediamtx/mediamtx.yml` |
+| `ADMIN_AUTH_TOKEN` | Bearer token for API auth — generate with `openssl rand -hex 32` | *(none — auth disabled)* |
+| `CORS_ORIGIN` | Allowed CORS origin | `*` |
+| `MEDIAMTX_API_USERNAME` | HTTP Basic username for MediaMTX API (if auth enabled) | *(none)* |
+| `MEDIAMTX_API_PASSWORD` | HTTP Basic password for MediaMTX API (if auth enabled) | *(none)* |
 
 ## Disable and rollback
 

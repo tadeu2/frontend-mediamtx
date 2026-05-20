@@ -1,5 +1,6 @@
 // Allow mediamtx-ui to run read-only systemctl commands without password.
 // Place in /etc/polkit-1/rules.d/50-mediamtx-admin-ui.rules.
+// No sudoers entries are needed — polkit handles read-only systemd access.
 polkit.addRule(function(action, subject) {
   if (subject.user === 'mediamtx-ui' &&
       action.id.indexOf('systemd1') !== -1) {

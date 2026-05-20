@@ -23,13 +23,18 @@ Environment=MEDIAMTX_API_URL=http://127.0.0.1:9997
 Environment=MEDIAMTX_METRICS_URL=http://127.0.0.1:9998/metrics
 Environment=MEDIAMTX_CONFIG_PATH=/etc/mediamtx/mediamtx.yml
 # Environment=ADMIN_AUTH_TOKEN=change-me
-# Values in .env override the defaults above.
+# ═══ WARNING: EnvironmentFile OVERRIDES Environment= above ═══
+# Variables defined in /opt/mediamtx-admin-ui/backend/.env WILL
+# replace the inline Environment= values with the same name.
+# If you want SECRETS ONLY, do NOT redefine BIND_ADDRESS, PORT,
+# MEDIAMTX_API_URL etc. in .env — only add the ones that differ.
 EnvironmentFile=-/opt/mediamtx-admin-ui/backend/.env
 
 # Security hardening
-# NoNewPrivileges disabled: sudo needed for systemctl/journalctl
-# with allowlisted sudoers entries.
-NoNewPrivileges=false
+# No root escalation needed — systemctl is accessed via polkit
+# and journalctl via systemd-journal group membership.
+# The mediamtx-ui user MUST be in the systemd-journal group.
+NoNewPrivileges=true
 ProtectSystem=strict
 ProtectHome=true
 PrivateTmp=true

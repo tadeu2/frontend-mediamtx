@@ -6,6 +6,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/) and this project 
 
 ## [Unreleased]
 
+### Security
+
+- Hardened systemd unit: `NoNewPrivileges=true`, removed sudo dependency
+- Added credential redaction in journalctl log responses (Authorization Basic/Bearer, password, token, apiKey, secret patterns)
+- Removed sudoers configuration from deploy script; systemctl access now uses polkit, journalctl uses systemd-journal group
+- Updated polkit rules with documentation for no-sudo design
+
 ### Added
 
 - Initial MVP implementation

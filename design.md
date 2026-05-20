@@ -15,7 +15,7 @@ Self-hosted read-only admin UI for MediaMTX, deployed as a separate systemd serv
 | Routing | Hash-based (`#dashboard`) | react-router | Zero additional deps, works without backend serving index.html fallback |
 | Auth | Bearer token (optional) | Session, OAuth | Simple, env-var driven, works for local/internal use |
 | Auth scope | Plugin-based `onRequest` hook | Middleware, route decorator | Fastify-native pattern, easy to test |
-| Log source | `journalctl` via `execFile` | File read, syslog | Bounded, structured, works with sudoers allowlist |
+| Log source | `journalctl` via `execFile` | File read, syslog | Bounded, structured, no sudo needed; user must be in systemd-journal group |
 | Metrics source | MediaMTX `/metrics` endpoint | Prometheus scrape | Direct fetch, no external dependency |
 
 ## API contract

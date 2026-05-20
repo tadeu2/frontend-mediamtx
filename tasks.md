@@ -1,6 +1,6 @@
 # Tasks: mediamtx-admin-ui
 
-**Status**: 10 / 12 complete
+**Status**: 13 / 14 complete
 **Delivery**: feature-branch-chain (3 PRs)
 
 ---
@@ -31,6 +31,9 @@
 | 4.1 | Backend tests (29 tests, auth + bounds + degradation) | ✅ |
 | 4.2 | Frontend tests + e2e | ⬜ |
 | 4.3 | README + docs/runbook | ✅ |
+| 5.1 | Permissions architecture: remove sudo, harden systemd unit | ✅ |
+| 5.2 | Credential redaction in log responses | ✅ |
+| 5.3 | Update polkit rules, docs, and install script for no-sudo design | ✅ |
 
 ---
 

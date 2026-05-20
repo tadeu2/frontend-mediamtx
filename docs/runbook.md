@@ -74,11 +74,32 @@ journalctl -u mediamtx -n 20 --no-pager
 
 | Symptom | Likely cause | Fix |
 |---------|-------------|-----|
-| `/api/status` shows `unavailable` | `systemctl` access denied | Add sudoers entry for `journalctl` + `systemctl` |
+| `/api/status` shows `unavailable` | `systemctl` or `journalctl` access denied | Verify polkit rules in `/etc/polkit-1/rules.d/` and `mediamtx-ui` membership in `systemd-journal` group |
 | `/api/metrics` shows unavailable | Metrics endpoint disabled | Enable `metrics: yes` in `mediamtx.yml` |
 | `/api/config` shows unavailable | Config path wrong or permissions | Check `MEDIAMTX_CONFIG_PATH` env var |
 | Backend won't start | Port in use | Change `PORT` env var |
 | Frontend can't reach backend | CORS or proxy misconfig | Check `CORS_ORIGIN` or dev proxy target |
+
+## .env file — permissions and safety
+
+The backend reads configuration from environment variables. In production these
+are set via the systemd unit and the local `backend/.env` file.
+
+```bash
+# The .env file is gitignored — NEVER commit it.
+# After creating/editing /opt/mediamtx-admin-ui/backend/.env:
+sudo chmod 600 /opt/mediamtx-admin-ui/backend/.env
+sudo chown mediamtx-ui:mediamtx-ui /opt/mediamtx-admin-ui/backend/.env
+
+# Reload and restart after changing .env:
+sudo systemctl daemon-reload
+sudo systemctl restart mediamtx-admin-ui
+```
+
+> **Important**: The systemd unit declares `EnvironmentFile=` AFTER its inline
+> `Environment=` directives. Any variable set in `.env` **overrides** the
+> unit's default. If you only want to add secrets, do NOT redefine
+> `BIND_ADDRESS`, `PORT`, etc. in `.env`.
 
 ## Config reference
 
@@ -92,3 +113,5 @@ journalctl -u mediamtx -n 20 --no-pager
 - Read-only MVP: no restart/reload/edit from UI — documented in ADR-0001.
 - Same LXC + systemd: no Docker without a new ADR.
 - Secrets redacted: passwords/tokens in config and log views are masked.
+- polkit rules for systemctl/journalctl access are environment-specific and
+  **not mandatory** — diagnostics degrade gracefully when access is denied.
