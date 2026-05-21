@@ -97,9 +97,13 @@ export const adminRoutes: FastifyPluginAsync<AdminRoutesOptions> = async (fastif
   );
 
   fastify.get('/api/metrics', async (): Promise<MetricsSummary> => {
-    const metricsUrl = settingsManager.get().mediamtxMetricsUrl;
+    const s = settingsManager.get();
+    const headers: Record<string, string> = {};
+    if (s.mediamtxApiUsername && s.mediamtxApiPassword) {
+      headers['Authorization'] = 'Basic ' + Buffer.from(`${s.mediamtxApiUsername}:${s.mediamtxApiPassword}`).toString('base64');
+    }
     try {
-      const response = await fetch(metricsUrl, { method: 'GET' });
+      const response = await fetch(s.mediamtxMetricsUrl, { method: 'GET', headers });
       if (!response.ok) {
         throw new Error(`metrics_status_${response.status}`);
       }

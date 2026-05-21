@@ -144,8 +144,13 @@ export class SettingsManager {
 
   private async checkMetricsReachable(): Promise<boolean> {
     try {
+      const headers: Record<string, string> = {};
+      if (this.mediamtxApiUsername && this.mediamtxApiPassword) {
+        headers['Authorization'] = 'Basic ' + Buffer.from(`${this.mediamtxApiUsername}:${this.mediamtxApiPassword}`).toString('base64');
+      }
       const res = await fetch(this.mediamtxMetricsUrl, {
         method: 'GET',
+        headers,
         signal: AbortSignal.timeout(3_000),
       });
       return res.ok;
