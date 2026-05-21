@@ -23,17 +23,17 @@ export function buildServer() {
   /* ── CORS (self-contained, can be encapsulated) ── */
   void app.register(corsPlugin, { origin: config.corsOrigin });
 
-  /* ── Auth + error handler: apply directly to root scope
-   * so hooks propagate to all child route scopes.
-   * Fastify v5 register() creates sibling encapsulated
-   * scopes — using register() for auth/errors silently
-   * bypasses them on sibling routes.              ── */
-  void authPlugin(app, { expectedToken: config.authToken });
+  /* ── Error handler on root scope (inherits to all children) ── */
   void errorHandlerPlugin(app, {});
 
-  /* ── Routes inherit root-scope hooks ── */
-  void app.register(adminRoutes, { settingsManager, mediamtxMetricsUrl: config.mediamtxMetricsUrl, mediamtxConfigPath: config.mediamtxConfigPath });
-  void app.register(settingsRoutes, { settingsManager });
+  /* ── Auth scope: authPlugin + routes registered as children
+   * so onRequest hooks and verifyAdminAuth decorator
+   * propagate naturally via Fastify's register().  ── */
+  void app.register(async function authScope(fastify) {
+    void fastify.register(authPlugin, { expectedToken: config.authToken });
+    void fastify.register(adminRoutes, { settingsManager, mediamtxMetricsUrl: config.mediamtxMetricsUrl, mediamtxConfigPath: config.mediamtxConfigPath });
+    void fastify.register(settingsRoutes, { settingsManager });
+  });
 
   if (existsSync(frontendDist) && existsSync(frontendAssets)) {
     void app.register(fastifyStatic, {

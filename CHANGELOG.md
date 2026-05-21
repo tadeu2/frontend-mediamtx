@@ -18,6 +18,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/) and this project 
 - All API calls use `Authorization: Bearer <token>` when configured
 - 401 responses trigger automatic logout and redirect to login
 
+### Changed
+
+- F-3: Restructured `backend/src/server.ts` to use Fastify's native `register()` encapsulation — authPlugin + route scopes are now children of an `authScope` wrapper, eliminating the plain-function workaround for scope propagation
+
 ### Added
 
 - F-1: Structured Prometheus metrics parser — line-by-line exposition-format parser with per-protocol connection/bandwidth breakdown (RTSP+RTSPS, RTMP+RTMPS merged)
