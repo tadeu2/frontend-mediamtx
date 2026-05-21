@@ -16,6 +16,7 @@ import { redactConfigYaml } from '../services/config-redact';
 import { readJournalLogs } from '../services/journal';
 import { readSafeDiagnostics, readSystemdStatus } from '../services/systemd';
 import { createMediaMTXClient } from '../services/mediamtx-api';
+import { parsePrometheusMetrics } from '../services/metrics-parser';
 import type { SettingsManager } from '../services/settings';
 
 interface AdminRoutesOptions {
@@ -103,14 +104,8 @@ export const adminRoutes: FastifyPluginAsync<AdminRoutesOptions> = async (fastif
         throw new Error(`metrics_status_${response.status}`);
       }
 
-      return {
-        generatedAt: now(),
-        source: 'metrics',
-        available: true,
-        totals: {},
-        protocols: {},
-        warnings: ['Metrics parser not implemented yet; raw availability only.']
-      };
+      const responseText = await response.text();
+      return parsePrometheusMetrics(responseText);
     } catch {
       return {
         generatedAt: now(),

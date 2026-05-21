@@ -20,6 +20,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/) and this project 
 
 ### Added
 
+- F-1: Structured Prometheus metrics parser — line-by-line exposition-format parser with per-protocol connection/bandwidth breakdown (RTSP+RTSPS, RTMP+RTMPS merged)
 - Initial MVP implementation
 - ADR-0001: same-LXC + systemd deployment decision (no Docker by default)
 - `docs/deployment/mediamtx-admin-ui.md` — deployment boundary, ports, safety rules
