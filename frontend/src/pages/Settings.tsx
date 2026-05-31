@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useApi } from '../api/ApiContext';
-import type { SettingsStatusResponse } from '../api/client';
+import type { SettingsStatusResponse } from '../../../shared/admin-api';
 
 /* ---- inline styles ---- */
 

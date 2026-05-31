@@ -1,4 +1,13 @@
-import type { HealthResponse, StreamsResponse, LogsResponse, MetricsSummary, ConfigView, SafeDiagnosticsResponse } from '../../../shared/admin-api';
+import type {
+  HealthResponse,
+  StreamsResponse,
+  LogsResponse,
+  MetricsSummary,
+  ConfigView,
+  SafeDiagnosticsResponse,
+  ServiceStatusResponse,
+  SettingsStatusResponse,
+} from '../../../shared/admin-api';
 
 interface ApiClientOptions {
   baseUrl: string;
@@ -55,34 +64,4 @@ export function createApiClient(options: ApiClientOptions) {
     getDiagnostics: (signal?: AbortSignal) => request<SafeDiagnosticsResponse>('/api/diagnostics/safe-check', signal),
     getSettings: (signal?: AbortSignal) => request<SettingsStatusResponse>('/api/settings', signal),
   };
-}
-
-export interface SettingsStatusResponse {
-  generatedAt: string;
-  bindAddress: string;
-  port: number;
-  mediamtxApiUrl: string;
-  mediamtxMetricsUrl: string;
-  mediamtxConfigPath: string;
-  authEnabled: boolean;
-  mediamtxApiUsernameConfigured: boolean;
-  mediamtxApiPasswordConfigured: boolean;
-  adminAuthTokenConfigured: boolean;
-  mediamtxApiReachable: boolean;
-  metricsReachable: boolean;
-}
-
-interface ServiceStatusResponse {
-  generatedAt: string;
-  source: string;
-  service: {
-    unit: string;
-    active: boolean;
-    state: string;
-    substate?: string;
-    since?: string;
-    uptimeSeconds?: number;
-    version?: string;
-  };
-  warnings: string[];
 }

@@ -1,21 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useApi } from '../api/ApiContext';
-import type { HealthResponse, StreamsResponse } from '../../../shared/admin-api';
-
-interface StatusData {
-  generatedAt: string;
-  source: string;
-  service: {
-    unit: string;
-    active: boolean;
-    state: string;
-    substate?: string;
-    since?: string;
-    uptimeSeconds?: number;
-    version?: string;
-  };
-  warnings: string[];
-}
+import type { HealthResponse, ServiceStatusResponse, StreamsResponse } from '../../../shared/admin-api';
 
 /* ---- inline styles ---- */
 
@@ -59,7 +44,7 @@ function formatUptime(seconds?: number): string {
 export function Dashboard() {
   const api = useApi();
   const [health, setHealth] = useState<HealthResponse | null>(null);
-  const [status, setStatus] = useState<StatusData | null>(null);
+  const [status, setStatus] = useState<ServiceStatusResponse | null>(null);
   const [streams, setStreams] = useState<StreamsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -79,7 +64,7 @@ export function Dashboard() {
         ]);
         if (!cancelled) {
           setHealth(h);
-          setStatus(s as StatusData);
+          setStatus(s);
           setStreams(str);
         }
       } catch (err) {
