@@ -23,6 +23,9 @@ sudo systemctl status mediamtx-admin-ui --no-pager
 ```bash
 curl http://127.0.0.1:9088/api/health
 # Expected: {"ok":true,"service":"mediamtx-admin-ui","generatedAt":"...","source":"fallback"}
+
+# Read-only backend/env status
+curl http://127.0.0.1:9088/api/settings
 ```
 
 ## Logs endpoint
@@ -107,6 +110,7 @@ sudo systemctl restart mediamtx-admin-ui
 - **Frontend config**: Vite dev proxy in `vite.config.ts`
 - **Pipeline order**: `backend` must be reachable before `frontend` can fetch data
 - **Shared types**: modify `shared/admin-api.ts` when adding/changing API contracts, then rebuild both packages
+- **Status/settings contract**: `/api/status` and `/api/settings` response DTOs are canonicalized in `shared/admin-api.ts`
 
 ## Architecture constraints
 

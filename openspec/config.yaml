@@ -1,0 +1,40 @@
+schema: spec-driven
+
+context: |
+  Project: mediamtx-admin-ui
+  Stack: TypeScript monorepo with backend Fastify/CommonJS and frontend React/Vite/ESM.
+  Architecture: read-only BFF proxying MediaMTX API, metrics, config, logs, and diagnostics.
+  Deployment: same LXC + systemd, no Docker by default.
+  Testing: backend node:test, frontend Vitest + React Testing Library, Playwright e2e.
+  Quality: strict TypeScript; no explicit lint, formatter, or coverage tool detected.
+  Strict TDD: enabled by init fallback because runnable test runners exist and no override marker was found.
+
+rules:
+  proposal:
+    - Keep changes reviewable and reversible.
+    - Include rollback notes for risky changes.
+  specs:
+    - Use Given/When/Then.
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY).
+  design:
+    - Document tradeoffs and constraints.
+    - Include flow diagrams for multi-step changes.
+  tasks:
+    - Group work by phase.
+    - Keep tasks small enough for one session.
+  apply:
+    tdd: true
+    test_command: |
+      frontend: cd frontend && npm test
+      backend: cd backend && npm test
+  verify:
+    test_command: |
+      frontend: cd frontend && npm test && npm run test:e2e
+      backend: cd backend && npm test
+    build_command: |
+      frontend: cd frontend && npm run build
+      backend: cd backend && npm run build
+    coverage_threshold: 0
+  archive:
+    - Merge deltas into main specs after verification.
+    - Preserve archive as an audit trail.

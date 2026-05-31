@@ -79,7 +79,7 @@ frontend/
 
 ```
 shared/
-└── admin-api.ts           # TypeScript DTOs for all API responses
+└── admin-api.ts           # Canonical TypeScript DTOs for all API responses, including /api/status and /api/settings
 ```
 
 Both backend and frontend tsconfig include `../shared/**/*.ts`.
@@ -119,8 +119,4 @@ MVP: **Same LXC + systemd** (ADR-0001). No Docker.
 
 ## Fastify v5 scope encapsulation
 
-**Known issue (discovered during testing):** `app.register()` creates sibling encapsulated scopes. Auth `onRequest` hooks and custom error handlers registered in one plugin scope do **not** apply to routes registered in a sibling scope.
-
-**Current workaround:** Tests bypass this by calling plugin functions as plain functions on the root scope. Production routes currently rely on the register order — **this must be fixed before deployment** by either:
-- Using `register()` with `{ encapsulate: false }`, or
-- Calling plugin functions as plain decorator/hook registrations on the root `app` instance.
+Auth and route registration is implemented through an `authScope` wrapper in `backend/src/server.ts`, so auth hooks/decorators propagate via Fastify `register()` hierarchy.

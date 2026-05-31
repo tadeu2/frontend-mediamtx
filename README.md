@@ -85,9 +85,11 @@ Serve the frontend `dist/` from the backend as static files, or via any web serv
 | GET | `/api/logs?lines=N&level=FILTER` | Recent journald logs |
 | GET | `/api/metrics` | Parsed Prometheus metrics |
 | GET | `/api/config` | Read-only config view |
+| GET | `/api/settings` | Read-only backend/env status |
 | GET | `/api/diagnostics/safe-check` | System diagnostics |
 
 All endpoints are read-only. No mutation endpoints exist in MVP.
+Response DTO contracts are centralized in `shared/admin-api.ts`.
 
 ## Security
 

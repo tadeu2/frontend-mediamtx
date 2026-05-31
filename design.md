@@ -20,7 +20,7 @@ Self-hosted read-only admin UI for MediaMTX, deployed as a separate systemd serv
 
 ## API contract
 
-All responses use shapes from `shared/admin-api.ts`. Error format:
+All responses use shapes from `shared/admin-api.ts` (including `/api/status` and `/api/settings`). Error format:
 
 ```typescript
 { code: string; message: string; details?: Record<string, unknown> }
@@ -34,6 +34,7 @@ All responses use shapes from `shared/admin-api.ts`. Error format:
 | `/api/logs` | GET | Yes | `lines`, `level`, `query` | `LogsResponse` |
 | `/api/metrics` | GET | Yes | — | `MetricsSummary` |
 | `/api/config` | GET | Yes | — | `ConfigView` |
+| `/api/settings` | GET | Yes | — | `SettingsStatusResponse` |
 | `/api/diagnostics/safe-check` | GET | Yes | — | `SafeDiagnosticsResponse` |
 
 ## Permission model
@@ -71,5 +72,4 @@ MVP sets all to `false`. The sidebar hides the "Admin" section entirely when all
 
 ## Known issues
 
-- **Fastify v5 scope encapsulation** — auth and error handler hooks do not propagate to sibling scopes via `register()`. Fix required before deployment.
 - **`normalizeLines(0)`** — passing `lines=0` returns the default (100) instead of clamping to 1, because `!0` is `true` in JavaScript.

@@ -21,6 +21,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/) and this project 
 ### Changed
 
 - F-3: Restructured `backend/src/server.ts` to use Fastify's native `register()` encapsulation — authPlugin + route scopes are now children of an `authScope` wrapper, eliminating the plain-function workaround for scope propagation
+- Initialized OpenSpec bootstrap (`openspec/config.yaml`, tracked skeleton directories) and refreshed `.atl/skill-registry.md`
+- Centralized `/api/status` + `/api/settings` DTO contracts in `shared/admin-api.ts`; backend/frontend now consume shared response types and API-facing docs were aligned (`README.md`, `architecture.md`, `design.md`, `docs/runbook.md`)
 
 ### Added
 
