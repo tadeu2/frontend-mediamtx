@@ -7,8 +7,8 @@ import type {
   HealthResponse,
   LogsResponse,
   MetricsSummary,
+  ServiceStatusResponse,
   SafeDiagnosticsResponse,
-  ServiceStatus,
   StreamPath,
   StreamsResponse
 } from '../../../shared/admin-api';
@@ -45,7 +45,7 @@ export const adminRoutes: FastifyPluginAsync<AdminRoutesOptions> = async (fastif
     source: 'fallback'
   }));
 
-  fastify.get('/api/status', async (): Promise<{ generatedAt: string; source: string; service: ServiceStatus; warnings?: string[] }> => {
+  fastify.get('/api/status', async (): Promise<ServiceStatusResponse> => {
     const [systemd, apiOk] = await Promise.all([
       readSystemdStatus(),
       createMTXClient().isAvailable(),

@@ -1,4 +1,5 @@
 import { FastifyPluginAsync } from 'fastify';
+import type { SettingsStatusResponse } from '../../../shared/admin-api';
 import type { SettingsManager } from '../services/settings';
 
 interface SettingsRoutesOptions {
@@ -20,7 +21,7 @@ export const settingsRoutes: FastifyPluginAsync<SettingsRoutesOptions> = async (
    * This endpoint does NOT expose editable settings.
    * All configuration is managed via backend/.env.
    */
-  fastify.get('/api/settings', async () => {
+  fastify.get('/api/settings', async (): Promise<SettingsStatusResponse> => {
     return settingsManager.getStatus();
   });
 };

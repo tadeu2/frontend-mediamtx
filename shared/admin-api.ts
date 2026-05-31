@@ -26,6 +26,28 @@ export interface ServiceStatus {
   version?: string;
 }
 
+export interface ServiceStatusResponse {
+  generatedAt: ISO8601String;
+  source: DataSource;
+  service: ServiceStatus;
+  warnings: string[];
+}
+
+export interface SettingsStatusResponse {
+  generatedAt: ISO8601String;
+  bindAddress: string;
+  port: number;
+  mediamtxApiUrl: string;
+  mediamtxMetricsUrl: string;
+  mediamtxConfigPath: string;
+  authEnabled: boolean;
+  mediamtxApiUsernameConfigured: boolean;
+  mediamtxApiPasswordConfigured: boolean;
+  adminAuthTokenConfigured: boolean;
+  mediamtxApiReachable: boolean;
+  metricsReachable: boolean;
+}
+
 export interface StreamPath {
   name: string;
   status: 'ready' | 'idle' | 'unavailable' | 'unknown';

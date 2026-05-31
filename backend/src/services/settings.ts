@@ -9,21 +9,7 @@
  */
 
 import { createMediaMTXClient } from './mediamtx-api';
-
-export interface SettingsStatus {
-  generatedAt: string;
-  bindAddress: string;
-  port: number;
-  mediamtxApiUrl: string;
-  mediamtxMetricsUrl: string;
-  mediamtxConfigPath: string;
-  authEnabled: boolean;
-  mediamtxApiUsernameConfigured: boolean;
-  mediamtxApiPasswordConfigured: boolean;
-  adminAuthTokenConfigured: boolean;
-  mediamtxApiReachable: boolean;
-  metricsReachable: boolean;
-}
+import type { SettingsStatusResponse } from '../../../shared/admin-api';
 
 function now(): string {
   return new Date().toISOString();
@@ -106,7 +92,7 @@ export class SettingsManager {
   }
 
   /** Return config status with reachability checks and all secrets excluded. */
-  async getStatus(): Promise<SettingsStatus> {
+  async getStatus(): Promise<SettingsStatusResponse> {
     const mtxClient = createMediaMTXClient(
       this.mediamtxApiUrl,
       this.mediamtxApiUsername,
