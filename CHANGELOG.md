@@ -4,6 +4,58 @@ All notable changes to `mediamtx-admin-ui` are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/) and this project uses [Semantic Versioning](VERSIONING.md).
 
+## 1.0.0 (2026-10-02)
+
+
+### Features
+
+* add deployment script and env example ([319c164](https://github.com/tadeu2/frontend-mediamtx/commit/319c164cdc3f17d5266f47636858975b01a4f826))
+* centralize shared admin api contract ([da54f11](https://github.com/tadeu2/frontend-mediamtx/commit/da54f11241920555c2b1d4b0ad699c084d4e0201))
+* dynamic MediaMTX settings configurable from frontend ([8995352](https://github.com/tadeu2/frontend-mediamtx/commit/899535232696053ebbaf6951c1938efe47d2ed5f))
+* initial MVP scaffold for mediamtx-admin-ui ([39e1fda](https://github.com/tadeu2/frontend-mediamtx/commit/39e1fda0a32170fdd5cef17f2c85f73faae87027))
+* integrate MediaMTX API for streams/status/config/diagnostics ([13c6791](https://github.com/tadeu2/frontend-mediamtx/commit/13c67915388e7c83df8f545ec2859072cf8ef914))
+* login/token auth flow + read-only settings panel ([03512aa](https://github.com/tadeu2/frontend-mediamtx/commit/03512aa77a2be4340407c11e00cf5053263d1024))
+* structured Prometheus metrics parser (F-1) ([3d160f5](https://github.com/tadeu2/frontend-mediamtx/commit/3d160f59959c53aab1bf69d3f0689f93cbd74926))
+* support Basic Auth for MediaMTX API via env vars ([f175722](https://github.com/tadeu2/frontend-mediamtx/commit/f175722b4b7e24aca5d9f9f98a4357f876908e64))
+* update frontend to shared admin api contract ([f28f819](https://github.com/tadeu2/frontend-mediamtx/commit/f28f819df1ca703f0082a759cebb74622632b3d7))
+
+
+### Bug Fixes
+
+* add Basic Auth to metrics fetch and reachability check ([48d9ef2](https://github.com/tadeu2/frontend-mediamtx/commit/48d9ef2fb8571948ea6aec6d25eb1e968b733a80))
+* allow .env to override LAN bind settings ([1aa209f](https://github.com/tadeu2/frontend-mediamtx/commit/1aa209f677d4ac39f058f846b5c651bbf8c78bae))
+* allow AF_NETLINK for Fastify address logging under systemd ([024bacd](https://github.com/tadeu2/frontend-mediamtx/commit/024bacd94872ffade71b6fb2cdc03d660252230b))
+* apply auth/error hooks to root Fastify scope + add systemd service file ([80bd8fd](https://github.com/tadeu2/frontend-mediamtx/commit/80bd8fd50ab5d25dcb29b5780d14d965675a6f23))
+* credential redaction and .env hardening ([86e5819](https://github.com/tadeu2/frontend-mediamtx/commit/86e58197a7452b8d1595f098377c99cb62cc363a))
+* Fastify v5 encapsulation — nest auth+route plugins under register() ([8707088](https://github.com/tadeu2/frontend-mediamtx/commit/8707088d2ca881200c4bf1c5eb49ad90fd38a35d))
+* frontend Bearer token flow for all API calls ([5b9e185](https://github.com/tadeu2/frontend-mediamtx/commit/5b9e185025319bd07ec36b03c2859807b1ed715b))
+* log stderr when systemctl command fails ([598cba8](https://github.com/tadeu2/frontend-mediamtx/commit/598cba82e52cfe914d1818ccc9f724fff01e7cfd))
+* make production deploy build and serve frontend ([6baeb6c](https://github.com/tadeu2/frontend-mediamtx/commit/6baeb6cd41e4461c436bb36bdb4386ea43082e53))
+* replace sudo with direct systemctl + polkit ([542a7df](https://github.com/tadeu2/frontend-mediamtx/commit/542a7dfd14bc3dd6323e6d9c6194eebb8f113fb6))
+* type mockApi return as Mocked&lt;ApiClient&gt; to expose mockResolvedValue/mockRejectedValue ([311b8dc](https://github.com/tadeu2/frontend-mediamtx/commit/311b8dc201652c853499909404de3edfc5a7faae))
+* use full /usr/bin/sudo path, add user to systemd-journal group ([7f5a0a4](https://github.com/tadeu2/frontend-mediamtx/commit/7f5a0a46d217ee21abe01e6135ec49febe1a63f5))
+
+
+### Miscellaneous
+
+* add release-please automation ([e6859f5](https://github.com/tadeu2/frontend-mediamtx/commit/e6859f5d0a5d664537543254fe84adfac1272677))
+* add release-please automation ([8992bfc](https://github.com/tadeu2/frontend-mediamtx/commit/8992bfccbb0ef6ac3d3c4b6c2b7ab7bf0b3699fc))
+* add release-please automation ([18a2c7e](https://github.com/tadeu2/frontend-mediamtx/commit/18a2c7efabcc7fd00b6c655d419e4720cc4ddca0))
+* archive shared admin api contract ([1c80956](https://github.com/tadeu2/frontend-mediamtx/commit/1c80956f7cc2d556f31c8cc55868680e1907b851))
+* fix release-type generic-&gt;simple ([7681cd6](https://github.com/tadeu2/frontend-mediamtx/commit/7681cd64af09dec0e25f7ae8d0ba74c8ce90f4a0))
+* switch gga provider to opencode ([9b09373](https://github.com/tadeu2/frontend-mediamtx/commit/9b09373cd26934ff172994853238b815f0d285cd))
+
+
+### Documentation
+
+* add versioning commitment to AGENTS.md ([939acc6](https://github.com/tadeu2/frontend-mediamtx/commit/939acc6242df78021702e5b084b62b80ed3f9c5b))
+* update CHANGELOG with all MVP changes since initial commit ([baf012e](https://github.com/tadeu2/frontend-mediamtx/commit/baf012e37e1cf23d4c8cc668abe76d9faffe957d))
+
+
+### Tests
+
+* frontend component tests (32) + e2e smoke tests ([5eb509c](https://github.com/tadeu2/frontend-mediamtx/commit/5eb509c8ebfee6f47fe3937281ee3b2f45dcad33))
+
 ## [Unreleased]
 
 ### Security
